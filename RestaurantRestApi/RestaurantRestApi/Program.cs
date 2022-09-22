@@ -1,9 +1,13 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using RestaurantRestApi;
 using RestaurantRestApi.DbConfigurations;
 using RestaurantRestApi.Entities;
 using RestaurantRestApi.Middleware;
+using RestaurantRestApi.Models;
+using RestaurantRestApi.Models.Validators;
 using RestaurantRestApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +22,10 @@ builder.Services.AddScoped<RequestTimeMiddleware>();
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<IValidator<RestaurantQuery>, RestaurantQueryValidator>();
+
+builder.Services.AddControllers()
+    .AddFluentValidation();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
