@@ -1,14 +1,22 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using RestaurantRestApi;
 using RestaurantRestApi.DbConfigurations;
 using RestaurantRestApi.Entities;
 using RestaurantRestApi.Middleware;
+using RestaurantRestApi.Models;
+using RestaurantRestApi.Models.Validators;
 using RestaurantRestApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddControllers()
+    .AddFluentValidation();
+
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IDishService, DishService>();
@@ -18,11 +26,20 @@ builder.Services.AddScoped<RequestTimeMiddleware>();
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<IValidator<RestaurantQuery>,RestaurantQueryValidator>();
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontEndClient", builder =>
+    builder.AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithOrigins(""));
+});
 
 builder.Services.AddDbContext<RestaurantDbContext>(options =>
 {
@@ -31,6 +48,7 @@ builder.Services.AddDbContext<RestaurantDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseCors("FrontEndClient");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
