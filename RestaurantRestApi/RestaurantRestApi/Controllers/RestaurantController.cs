@@ -5,7 +5,6 @@ using RestaurantRestApi.Services;
 namespace RestaurantRestApi.Controllers
 {
     [Route("restaurants")]
-    [ApiController]
     public class RestaurantController : ControllerBase
     {
         private readonly IRestaurantService _restaurantService;
@@ -16,9 +15,9 @@ namespace RestaurantRestApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<RestaurantDto>> GetAll()
+        public ActionResult<IEnumerable<RestaurantDto>> GetAll([FromQuery] string searchPhrase)
         {
-            var restaurantsDtos = _restaurantService.GetAll();
+            var restaurantsDtos = _restaurantService.GetAll(searchPhrase);
 
             return Ok(restaurantsDtos);
         }
