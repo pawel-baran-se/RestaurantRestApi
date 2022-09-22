@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantRestApi.Entities;
 using RestaurantRestApi.Exceptions;
 using RestaurantRestApi.Models;
+using System.Linq.Expressions;
 
 namespace RestaurantRestApi.Services
 {
@@ -40,13 +41,28 @@ namespace RestaurantRestApi.Services
 
         public PageResult<RestaurantDto> GetAll(RestaurantQuery query)
         {
-
             var baseQuery = _dbContext
                 .Restaurants
                 .Include(r => r.Address)
                 .Include(r => r.Dishes)
                 .Where(r => query.searchPhrase == null || (r.Name.ToLower().Contains(query.searchPhrase.ToLower())
                     || r.Description.ToLower().Contains(query.searchPhrase.ToLower())));
+
+            if (!string.IsNullOrEmpty(query.SortBy))
+            {
+                var columnsSelectors = new Dictionary<string, Expression<Func<Restaurant, object>>>
+                {
+                    {nameof(Restaurant.Name), r => r.Name},
+                    {nameof(Restaurant.Description), r => r.Description},
+                    {nameof(Restaurant.Category), r => r.Category},
+                };
+
+                var selectedColumn = columnsSelectors[query.SortBy];
+
+                baseQuery = query.SortDirection == SortDirection.ASC ?
+                     baseQuery.OrderBy(selectedColumn)
+                     : baseQuery.OrderByDescending(selectedColumn);
+            }
 
             var restaurant = baseQuery
                 .Skip(query.pageSize * (query.pageNumber - 1))
@@ -56,7 +72,7 @@ namespace RestaurantRestApi.Services
             var restaurtantDtos = _mapper.Map<List<RestaurantDto>>(restaurant);
             var totalItemsCount = baseQuery.Count();
 
-            var result = new PageResult<RestaurantDto>(restaurtantDtos, totalItemsCount , query.pageSize, query.pageNumber);
+            var result = new PageResult<RestaurantDto>(restaurtantDtos, totalItemsCount, query.pageSize, query.pageNumber);
 
             return result;
         }

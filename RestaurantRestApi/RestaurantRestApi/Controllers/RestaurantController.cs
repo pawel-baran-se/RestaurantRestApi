@@ -5,6 +5,7 @@ using RestaurantRestApi.Services;
 namespace RestaurantRestApi.Controllers
 {
     [Route("restaurants")]
+    [ApiController]
     public class RestaurantController : ControllerBase
     {
         private readonly IRestaurantService _restaurantService;
