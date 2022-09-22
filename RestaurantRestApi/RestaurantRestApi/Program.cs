@@ -33,6 +33,13 @@ builder.Services.AddScoped<IValidator<RestaurantQuery>,RestaurantQueryValidator>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontEndClient", builder =>
+    builder.AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithOrigins(""));
+});
 
 builder.Services.AddDbContext<RestaurantDbContext>(options =>
 {
@@ -41,6 +48,7 @@ builder.Services.AddDbContext<RestaurantDbContext>(options =>
 
 var app = builder.Build();
 
+app.UseCors("FrontEndClient");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
