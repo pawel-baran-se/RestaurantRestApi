@@ -3,6 +3,7 @@ using NLog.Web;
 using RestaurantRestApi;
 using RestaurantRestApi.DbConfigurations;
 using RestaurantRestApi.Entities;
+using RestaurantRestApi.Middleware;
 using RestaurantRestApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
+builder.Services.AddScoped<ErrorHandlingMiddleware>();
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
@@ -33,6 +35,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
